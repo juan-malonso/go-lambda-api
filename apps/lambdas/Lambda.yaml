@@ -1,0 +1,73 @@
+version: '3'
+
+env:
+  LAMBDA_DIR: "lambdas"
+  ROOT_PATH:
+    sh: pwd
+
+  SAM_DAEMON: "${ROOT_PATH}/${LAMBDA_DIR}/.sam/.air.toml"
+  SAM_TEMPLATE: "sam.template.yaml"
+  SAM_PORT: 3051
+
+  AWS_ENDPOINT: http://localhost:4566
+  AWS_DEFAULT_REGION: eu-west-2
+  AWS_ACCESS_KEY_ID: "test"
+  AWS_SECRET_ACCESS_KEY: "test"
+  AWS_DEFAULT_OUTPUT: json
+
+  AWS_S3_LAMBDA: "lambda-bucket"
+
+  AWS_DYNAMO_ENDPOINT: "http://aws:4566"
+  AWS_DYNAMO_CONFIG_TABLE: "config-table"
+  AWS_DYNAMO_EVENTS_TABLE: "events-table"
+
+  AWS_EVENTBRIDGE_EVENTS_BUS_NAME: "events-bus"
+
+tasks:
+  logs:
+    internal: true
+    silent: true
+    vars:
+      LAMBDA_NAME: "{{.LAMBDA_NAME}}"
+    cmds:
+      - cmd: aws --endpoint-url {{.AWS_ENDPOINT}}
+          logs tail /aws/lambda/{{.LAMBDA_NAME}} --follow
+
+  invoke:
+    dir: "{{.LAMBDA_PATH}}"
+    internal: true
+    silent: true
+    cmds:
+      - cmd: sam local invoke
+          -t {{.SAM_TEMPLATE}}
+  
+  start:
+    dir: "{{.LAMBDA_PATH}}"
+    internal: true
+    silent: true
+    cmds:
+      - cmd: sam local start-api
+          -t {{.SAM_TEMPLATE}}
+          -p {{.SAM_PORT}}
+          --docker-network mock_aws-service
+          --warm-containers EAGER
+
+  dev:
+    dir: "{{.LAMBDA_PATH}}"
+    internal: true
+    silent: true
+    cmds:
+      - cmd: go install github.com/cosmtrek/air@latest
+        silent: true
+      - cmd: air -c {{.SAM_DAEMON}}
+
+  update:
+    dir: "{{.LAMBDA_PATH}}"
+    internal: true
+    silent: true
+    vars:
+      LAMBDA_ZIP: 'main.zip'
+    cmds:
+      - cmd: aws --endpoint-url {{.AWS_ENDPOINT}}
+          s3 cp {{.LAMBDA_ZIP}} s3://{{.AWS_S3_LAMBDA}}/{{.LAMBDA_PATH}}.zip
+      - cmd: aws --endpoint-url {{.AWS_ENDPOINT}} s3 ls s3://{{.AWS_S3_LAMBDA}}

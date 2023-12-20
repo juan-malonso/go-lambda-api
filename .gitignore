@@ -1,0 +1,15 @@
+# FOLDERS
+localstack
+bin
+tmp
+.terraform
+
+# FILES
+*.zip
+*.tfstate*
+
+go.mod
+go.sum
+go.work
+
+????????

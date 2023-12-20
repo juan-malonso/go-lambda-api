@@ -1,0 +1,21 @@
+version: '3'
+
+env:
+  LIBRARY_COMMONS_PATH: commons
+  
+
+tasks:
+  init:
+    cmds:
+      - task: ::init-module
+        vars:
+          GO_MODULE_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_COMMONS_PATH}}"
+      - cmd: go mod tidy
+        silent: true
+  
+  import:
+    cmds:
+      - task: ::import-module
+        vars:
+          GO_MODULE_PATH: "{{.GO_MODULE_PATH}}"
+          GO_LIBRARY_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_COMMONS_PATH}}"

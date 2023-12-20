@@ -1,0 +1,41 @@
+version: "3"
+env:
+  DOCKER_COMPOSE: ./localstack.docker-compose.yaml
+
+  AWS_REGION: eu-west-2
+  AWS_PORT: 4566
+
+includes:
+  aws:
+    dir: ./aws
+    taskfile: ./aws
+    optional: true
+
+tasks:
+  clean:
+    silent: true
+    cmds: 
+      - rm -rf ./.volume/localstack/*
+
+  setup:
+    silent: true
+    internal: true
+    cmds:
+      - mkdir -p ./.volume/localstack
+
+  up:
+    deps: [setup]
+    cmds: 
+      - docker compose -f {{.DOCKER_COMPOSE}} up -d aws
+      - PORT=4001 docker compose -f {{.DOCKER_COMPOSE}} up -d dynamo-gui
+
+  down:
+    cmds: 
+      - docker compose -f {{.DOCKER_COMPOSE}} rm -s -f -v aws
+      - PORT=4001 docker compose -f {{.DOCKER_COMPOSE}} rm -s -f -v dynamo-gui
+
+  restart:
+    cmds: 
+      - docker compose -f {{.DOCKER_COMPOSE}} rm -s -f -v aws
+      - docker compose -f {{.DOCKER_COMPOSE}} up -d aws
+

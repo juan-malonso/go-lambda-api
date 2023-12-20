@@ -1,0 +1,65 @@
+version: "3"
+
+env:
+  LAMBDA_EVENT_STORE: event_store
+  LAMBDA_EVENT_STORE_NAME: eventStore
+
+includes:
+  lambda:
+    dir: ".."
+    taskfile: "../Lambda.yaml"
+    optional: true
+
+tasks:
+  init:
+    cmds:
+      - task: ::init-module
+        vars:
+          GO_MODULE_PATH: "{{.LAMBDA_DIR}}/{{.LAMBDA_EVENT_STORE}}"
+      - task: ::libraries:commons:import
+        vars:
+          GO_MODULE_PATH: "{{.LAMBDA_DIR}}/{{.LAMBDA_EVENT_STORE}}"
+      - task: ::libraries:env:import
+        vars:
+          GO_MODULE_PATH: "{{.LAMBDA_DIR}}/{{.LAMBDA_EVENT_STORE}}"
+      - task: ::libraries:log:import
+        vars:
+          GO_MODULE_PATH: "{{.LAMBDA_DIR}}/{{.LAMBDA_EVENT_STORE}}"
+      - task: ::libraries:dynamo_events:import
+        vars:
+          GO_MODULE_PATH: "{{.LAMBDA_DIR}}/{{.LAMBDA_EVENT_STORE}}"
+      - cmd: go mod tidy
+        silent: true
+
+  build:
+    silent: true
+    env:
+      GOOS: linux
+      GOARCH: amd64
+    cmds:
+      - cmd: go build -o {{.LAMBDA_BIN}}/main ./cmd
+      - cmd: zip main.zip {{.LAMBDA_BIN}}/main
+
+  logs:
+    cmds:
+      - task: lambda:logs
+        vars:
+          LAMBDA_NAME: "{{.LAMBDA_EVENT_STORE_NAME}}"
+
+  invoke:
+    cmds:
+      - task: lambda:invoke
+        vars:
+          LAMBDA_PATH: "{{.LAMBDA_EVENT_STORE}}"
+
+  start:
+    cmds:
+      - task: lambda:start
+        vars:
+          LAMBDA_PATH: "{{.LAMBDA_EVENT_STORE}}"
+
+  dev:
+    cmds:
+      - task: lambda:dev
+        vars:
+          LAMBDA_PATH: "{{.LAMBDA_EVENT_STORE}}"

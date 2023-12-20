@@ -1,0 +1,27 @@
+version: '3'
+
+env:
+  LIBRARY_TRACK_EVENTS_PATH: track_events
+  
+
+tasks:
+  init:
+    cmds:
+      - task: ::init-module
+        vars:
+          GO_MODULE_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_TRACK_EVENTS_PATH}}"
+      - task: :env:import
+        vars:
+          GO_MODULE_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_TRACK_EVENTS_PATH}}"
+      - task: :dynamo_events:import
+        vars:
+          GO_MODULE_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_TRACK_EVENTS_PATH}}"
+      - cmd: go mod tidy
+        silent: true
+  
+  import:
+    cmds:
+      - task: ::import-module
+        vars:
+          GO_MODULE_PATH: "{{.GO_MODULE_PATH}}"
+          GO_LIBRARY_PATH: "{{.LIBRARY_DIR}}/{{.LIBRARY_TRACK_EVENTS_PATH}}"

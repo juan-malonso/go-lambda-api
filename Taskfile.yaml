@@ -1,0 +1,41 @@
+version: '3'
+
+includes:
+  terraform:
+    dir: ./.iac
+    taskfile: ./.iac
+    optional: true
+  mock:
+    dir: ./.mock
+    taskfile: ./.mock
+    optional: true
+  apps:
+    dir: ./apps
+    taskfile: ./apps
+    optional: true
+
+tasks:
+  restart:
+    cmds: 
+    - task: mock:restart
+    - task: apps:build
+    - task: terraform:test-app:apply
+
+  up:
+    cmds: 
+    - task: mock:up
+    - task: apps:init
+    - task: apps:build
+    - task: terraform:test-app:apply
+
+  down:
+    cmds: 
+    - task: mock:down
+  
+  init:
+    cmds: 
+    - task: apps:init
+
+  build:
+    cmds: 
+    - task: apps:build

@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda Serverles Testing.
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: go1.x
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        AWS_REGION: $AWS_DEFAULT_REGION
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+
+        AWS_DYNAMO_ENDPOINT: $AWS_DYNAMO_ENDPOINT
+        AWS_DYNAMO_CONFIG_TABLE: $AWS_DYNAMO_CONFIG_TABLE
+        AWS_DYNAMO_EVENTS_TABLE: $AWS_DYNAMO_EVENTS_TABLE
+        AWS_EVENTBRIDGE_EVENTS_BUS_NAME: $AWS_EVENTBRIDGE_EVENTS_BUS_NAME
+
+Resources:
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: test
+
+  ApiRoute:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: "main"
+      CodeUri: bin
+      Handler: main
+      Runtime: go1.x
+      Events:
+        GetEndpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /get
+            Method: GET
+        PostEndpoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /post
+            Method: POST

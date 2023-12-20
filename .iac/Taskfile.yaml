@@ -1,0 +1,18 @@
+version: "3"
+
+includes:
+  test-app:
+    dir: ./saas/test-app
+    taskfile: ./saas/test-app
+    optional: true
+
+tasks:
+  init:
+    cmds:
+      - task: test-app:init
+  plan:
+    cmds:
+      - task: test-app:plan
+  apply:
+    cmds:
+      - task: test-app:apply

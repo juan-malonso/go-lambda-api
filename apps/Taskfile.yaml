@@ -1,0 +1,59 @@
+version: '3'
+
+env:
+  PROYECT_APP: github.com/go-lambda-api/apps/
+
+  LAMBDA_BIN: bin
+
+includes:
+  libraries:
+    dir: ./libraries
+    taskfile: ./libraries
+    optional: true
+  lambdas:
+    dir: ./lambdas
+    taskfile: ./lambdas
+    optional: true
+
+tasks:
+  init: # WORKSPACE & DEPENDENCIES INSTALL
+    cmds:
+      - cmd: rm -f go.work
+        silent: true
+      - go work init
+      - task: libraries:init
+      - task: lambdas:init
+
+  build: # WORKSPACE & ZIP INSTALL
+    cmds:
+      - task: lambdas:build
+
+  workspace:
+    internal: true
+    cmds:
+      - go work use ./{{.GO_MODULE_PATH}}
+
+  init-module:
+    internal: true
+    dir: "{{.GO_MODULE_PATH}}"
+    cmds: 
+      - task: workspace
+        silent: true
+        vars:
+          GO_MODULE_PATH: "{{.GO_MODULE_PATH}}"
+      - cmd: rm -f go.mod go.sum
+        silent: true
+      - cmd: go mod init {{.PROYECT_APP}}{{.GO_MODULE_PATH}}
+
+  import-module:
+    internal: true
+    silent: true
+    dir: "{{.GO_MODULE_PATH}}"
+    env:
+      GO_MODULE_PATH: "{{.GO_MODULE_PATH}}"
+      GO_LIBRARY_PATH: "{{.GO_LIBRARY_PATH}}"
+      GO_LIBRARY_PACK: "{{.PROYECT_APP}}{{.GO_LIBRARY_PATH}}"
+    cmds:
+      - $(echo ${GO_MODULE_PATH} | sed 's/[^\/]*/../g' | xargs -I{} echo \
+        "go mod edit -replace ${GO_LIBRARY_PACK}={}/${GO_LIBRARY_PATH}")
+      - go get ${GO_LIBRARY_PACK}

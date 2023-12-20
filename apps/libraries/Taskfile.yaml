@@ -1,0 +1,40 @@
+version: '3'
+
+env:
+  LIBRARY_DIR: "libraries"
+
+includes:
+  commons:
+    dir: ./commons
+    taskfile: ./commons
+    optional: true
+  env:
+    dir: ./env
+    taskfile: ./env
+    optional: true
+  log:
+    dir: ./log
+    taskfile: ./log
+    optional: true
+  dynamo_config:
+    dir: ./dynamo_config
+    taskfile: ./dynamo_config
+    optional: true
+  dynamo_events:
+    dir: ./dynamo_events
+    taskfile: ./dynamo_events
+    optional: true
+  track_events:
+    dir: ./track_events
+    taskfile: ./track_events
+    optional: true
+
+tasks:
+  init:
+    cmds:
+      - task: commons:init
+      - task: log:init
+      - task: env:init
+      - task: dynamo_config:init
+      - task: dynamo_events:init
+      - task: track_events:init

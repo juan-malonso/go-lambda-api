@@ -1,0 +1,8 @@
+root = "."
+
+[build]
+  cmd = "task build | docker rm -f $(docker ps -a -q --filter ancestor=public.ecr.aws/lambda/go:1-rapid-x86_64)"
+  full_bin = "task start"
+  exclude_dir = ["bin"]
+  exclude_ext = ["toml", "yaml", "zip"]
+  send_interrupt = true

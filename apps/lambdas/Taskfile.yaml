@@ -1,0 +1,22 @@
+version: '3'
+
+includes:
+  endpoint_config:
+    dir: ./endpoint_config
+    taskfile: ./endpoint_config/Taskfile.yaml
+    optional: true
+  event_store:
+    dir: ./event_store
+    taskfile: ./event_store/Taskfile.yaml
+    optional: true
+
+tasks:
+  init:
+    cmds:
+      - task: event_store:init
+      - task: endpoint_config:init
+
+  build:
+    cmds:
+      - task: event_store:build
+      - task: endpoint_config:build

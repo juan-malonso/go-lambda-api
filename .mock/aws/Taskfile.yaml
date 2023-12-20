@@ -1,0 +1,29 @@
+version: "3"
+env:
+  AWS_COMMAND: aws --endpoint-url http://localhost:4566
+  AWS_ACCESS_KEY_ID: "test"
+  AWS_SECRET_ACCESS_KEY: "test"
+  AWS_DEFAULT_REGION: eu-west-2
+  AWS_DEFAULT_OUTPUT: text
+
+tasks:
+  log:get-groups:
+    silent: true
+    cmds: 
+      - "{{.AWS_COMMAND}} logs describe-log-groups"
+
+  log:get-streams:
+    silent: true
+    vars:
+      AWS_LOG_GROUP: ${AWS_LOG_GROUP:-/aws/lambda/endpointConfig}
+    cmds: 
+      - "{{.AWS_COMMAND}} logs describe-log-streams --log-group-name {{.AWS_LOG_GROUP}} --order-by LastEventTime --limit 1 --descending --query 'logStreams[0].logStreamName' --output text"
+
+  log:get-events:
+    silent: true
+    vars:
+      AWS_LOG_GROUP: ${AWS_LOG_GROUP:-/aws/lambda/endpointConfig}
+      AWS_LOG_STREAM:
+        sh: task log:get-streams
+    cmds: 
+      - "{{.AWS_COMMAND}} logs get-log-events --log-group-name {{.AWS_LOG_GROUP}} --log-stream-name {{.AWS_LOG_STREAM}} --output text"
